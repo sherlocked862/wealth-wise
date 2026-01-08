@@ -7,11 +7,11 @@ import { createClient } from '@/app/utils/supabase/server'
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    // 1. Get data from the form
+    // 1. Get data
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
-    // 2. Ask Supabase to log in
+    // 2. Sign in
     const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -21,9 +21,9 @@ export async function login(formData: FormData) {
         redirect('/error')
     }
 
-    // 3. If successful, refresh page and go to dashboard
+    // 3. Redirect to Dashboard (FIXED)
     revalidatePath('/', 'layout')
-    redirect('/')
+    redirect('/dashboard')
 }
 
 export async function signup(formData: FormData) {
@@ -38,9 +38,17 @@ export async function signup(formData: FormData) {
     })
 
     if (error) {
+        console.log(error.message)
         redirect('/error')
     }
 
+    // Redirect to Dashboard (FIXED)
     revalidatePath('/', 'layout')
-    redirect('/')
+    redirect('/dashboard')
+}
+
+export async function signout() {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/login')
 }

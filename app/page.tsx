@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
     return (
@@ -10,8 +11,15 @@ export default function Home() {
 
             {/* This uses the component you just installed */}
             <div className="flex gap-4">
-                <Button size="lg">Login</Button>
-                <Button variant="outline" size="lg">Sign Up</Button>
+                {/* Link to the Login Page */}
+                <Link href="/login">
+                    <Button size="lg">Login</Button>
+                </Link>
+
+                {/* Since our login page handles both, we send them there too for now */}
+                <Link href="/login">
+                    <Button variant="outline" size="lg">Sign Up</Button>
+                </Link>
             </div>
         </main>
     );

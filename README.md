@@ -2,8 +2,6 @@
 
 A smart, AI-powered personal finance tracker that simplifies expense logging. Users can manually track spending or upload photos of receipts to have **Google Gemini AI** automatically extract transaction details.
 
-![Project Screenshot](https://via.placeholder.com/800x400?text=WealthWise+Dashboard)
-*(Note: You can replace this link with a real screenshot later)*
 
 ## 🚀 Key Features
 - **AI Receipt Scanning:** Uses Google Gemini (Multimodal AI) to read receipt images and extract Merchant, Total, and Category.

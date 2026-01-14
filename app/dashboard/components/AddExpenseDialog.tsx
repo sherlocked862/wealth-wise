@@ -19,9 +19,10 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { addExpense } from "../actions"
-import { scanReceipt } from "../utils" // Import our new AI function
-import { useState, ChangeEvent } from "react"
-import { Loader2, ScanLine } from "lucide-react"
+import { scanReceipt } from "../utils"
+import { useState, ChangeEvent, useRef } from "react"
+import { Loader2, Camera, FileUp } from "lucide-react"
+import imageCompression from "browser-image-compression";
 
 export function AddExpenseDialog() {
     const [open, setOpen] = useState(false)
@@ -32,25 +33,43 @@ export function AddExpenseDialog() {
     const [amount, setAmount] = useState("")
     const [category, setCategory] = useState("")
 
-    const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    // Refs for file inputs
+    const cameraInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+    const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
 
         setIsScanning(true)
 
-        const formData = new FormData()
-        formData.append("file", file)
+        try {
+            // Compression options
+            const options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+            }
 
-        // Call the AI
-        const data = await scanReceipt(formData)
+            const compressedFile = await imageCompression(file, options);
 
-        if (data) {
-            setTitle(data.title || "")
-            setAmount(data.amount?.toString() || "")
-            setCategory(data.category || "Other")
+            const formData = new FormData()
+            formData.append("file", compressedFile)
+
+            const data = await scanReceipt(formData)
+
+            if (data) {
+                setTitle(data.title || "")
+                setAmount(data.amount?.toString() || "")
+                setCategory(data.category || "Other")
+            }
+        } catch (error) {
+            console.error("Error during image compression or scanning:", error);
+            // Optionally, show an error message to the user
+        } finally {
+            setIsScanning(false)
         }
-
-        setIsScanning(false)
     }
 
     return (
@@ -62,39 +81,54 @@ export function AddExpenseDialog() {
                 <DialogHeader>
                     <DialogTitle>Add New Expense</DialogTitle>
                     <DialogDescription>
-                        Upload a receipt to auto-fill, or type manually.
+                        Use your camera or upload a file to auto-fill.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                     {/* AI Upload Section */}
-                    <div className="flex items-center gap-4 p-4 border-2 border-dashed rounded-lg bg-slate-50">
-                        <div className="flex-1">
-                            <Label htmlFor="receipt" className="cursor-pointer block text-sm font-medium text-slate-700">
-                                {isScanning ? "Scanning Receipt..." : "Upload Receipt for AI Scan"}
-                            </Label>
-                            <Input
-                                id="receipt"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileUpload}
-                                disabled={isScanning}
-                                className="mt-2"
-                            />
-                        </div>
+                    <div className="p-4 border-2 border-dashed rounded-lg bg-slate-50 text-center">
+                        <Label className="block text-sm font-medium text-slate-700 mb-4">
+                            {isScanning ? "Scanning Receipt..." : "Scan a receipt with AI"}
+                        </Label>
                         {isScanning ? (
-                            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                            <div className="flex justify-center items-center h-24">
+                                <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+                            </div>
                         ) : (
-                            <ScanLine className="h-8 w-8 text-slate-400" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <Button variant="outline" onClick={() => cameraInputRef.current?.click()}>
+                                    <Camera className="mr-2 h-4 w-4" /> Camera
+                                </Button>
+                                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                    <FileUp className="mr-2 h-4 w-4" /> Upload
+                                </Button>
+                                <Input
+                                    ref={cameraInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
+                                <Input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
+                            </div>
                         )}
                     </div>
+
 
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                             <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Or enter details</span>
+                            <span className="bg-background px-2 text-muted-foreground">Or enter details manually</span>
                         </div>
                     </div>
 

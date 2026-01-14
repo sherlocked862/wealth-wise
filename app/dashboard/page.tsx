@@ -31,25 +31,25 @@ export default async function Dashboard() {
         .order('created_at', { ascending: false });
 
     return (
-        <div className="flex min-h-screen flex-col p-10 gap-8 bg-gray-50">
+        <div className="flex min-h-screen w-full flex-col gap-8 bg-gray-50 p-4 sm:p-8 md:p-12">
 
             {/* Header Section */}
-            <div className="flex justify-between items-center bg-white p-6 rounded-lg shadow-sm">
+            <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Dashboard</h1>
                     <p className="text-gray-500">Welcome, {user.email}</p>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                     <AddExpenseDialog />
                     <form action={signout}>
-                        <Button variant="destructive">Sign Out</Button>
+                        <Button variant="destructive" className="w-full sm:w-auto">Sign Out</Button>
                     </form>
                 </div>
-            </div>
+            </header>
 
             {/* Expenses Table Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <div className="overflow-x-auto rounded-lg border bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
 
                 {/* If no expenses, show the empty state. Otherwise, show table. */}
